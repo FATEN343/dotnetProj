@@ -11,7 +11,7 @@ namespace ProjetDotNet.Models
         [Required]
         public int OrderId { get; set; }
         [Required]
-        public int BookId { get; set; }
+        public int ProductId { get; set; }
         [Required]
         public int Quantity { get; set; }
         [Required]

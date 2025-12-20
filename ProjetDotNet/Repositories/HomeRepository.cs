@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using ProjetDotNet.Data;
 using ProjetDotNet.Models;
 
 namespace ProjetDotNet.Repositories
@@ -18,42 +17,36 @@ namespace ProjetDotNet.Repositories
             return await _db.Categories.ToListAsync();
         }
 
-        public async Task<IEnumerable<Product>> GetProducts(string sTerm = "", int CategoryId = 0)
+        public async Task<IEnumerable<Product>> GetProducts(string sTerm = "", int categoryId = 0)
         {
-            // Build query
             var productQuery = _db.Products
                .AsNoTracking()
                .Include(x => x.Category)
-               .Include(x => x.Stock)
+               // .Include(x => x.Stock) // Commented out: Stock table doesn't exist yet
                .AsQueryable();
 
-            // Filter by search term
             if (!string.IsNullOrWhiteSpace(sTerm))
             {
-                var term = sTerm.ToLower();
-                productQuery = productQuery.Where(p => p.ProductName.ToLower().StartsWith(term));
+                productQuery = productQuery.Where(p => p.ProductName.StartsWith(sTerm.ToLower()));
             }
 
-            // Filter by category
-            if (CategoryId > 0)
+            if (categoryId > 0)
             {
-                productQuery = productQuery.Where(p => p.CategoryId == CategoryId);
+                productQuery = productQuery.Where(p => p.CategoryId == categoryId);
             }
 
-            // Select Product with required fields
             var products = await productQuery
-                .Select(p => new Product
+                .AsNoTracking()
+                .Select(product => new Product
                 {
-                    Id = p.Id,
-                    ProductName = p.ProductName,
-                    BrandName = p.BrandName,
-                    Price = p.Price,
-                    Image = p.Image,
-                    CategoryId = p.CategoryId,
-                    Category = p.Category,
-                    Quantity = p.Stock == null ? 0 : p.Stock.Quantity
-                })
-                .ToListAsync();
+                    Id = product.Id,
+                    Image = product.Image,
+                    ProductName = product.ProductName,
+                    CategoryId = product.CategoryId,
+                    Price = product.Price,
+                    CategoryName = product.Category.CategoryName,
+                    // Quantity = product.Stock == null ? 0 : product.Stock.Quantity // Commented out
+                }).ToListAsync();
 
             return products;
         }

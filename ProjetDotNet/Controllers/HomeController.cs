@@ -1,11 +1,9 @@
 using ProjetDotNet.Models;
-//using ProjetDotNet.Models.DTOs;
-using Humanizer.Localisation;
+using ProjetDotNet.Models.DTOs;
 using Microsoft.AspNetCore.Mvc;
-using ProjetDotNet;
 using System.Diagnostics;
 
-namespace BookShoppingCartMvcUI.Controllers
+namespace ProjetDotNet.Controllers
 {
     public class HomeController : Controller
     {
@@ -20,20 +18,18 @@ namespace BookShoppingCartMvcUI.Controllers
 
         public async Task<IActionResult> Index(string sterm = "", int categoryId = 0)
         {
-            // Commenting out until ProductDisplayModel is created
-            // IEnumerable<Product> products = await _homeRepository.GetProducts(sterm, categoryId);
-            // IEnumerable<Category> categories = await _homeRepository.Categories();
-            // ProductDisplayModel productModel = new ProductDisplayModel
-            // {
-            //     Products = products,
-            //     Categories = categories,
-            //     STerm = sterm,
-            //     CategoryId = categoryId
-            // };
-            // return View(productModel);
+            IEnumerable<Product> products = await _homeRepository.GetProducts(sterm, categoryId);
+            IEnumerable<Category> categories = await _homeRepository.Categories();
 
-            // Temporary: just return the view without a model
-            return View();
+            ProductDisplayModel productModel = new ProductDisplayModel
+            {
+                Products = products,
+                Categories = categories,
+                STerm = sterm,
+                CategoryId = categoryId
+            };
+
+            return View(productModel);
         }
 
         public IActionResult Privacy()
@@ -44,8 +40,10 @@ namespace BookShoppingCartMvcUI.Controllers
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            return View(new ErrorViewModel
+            {
+                RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
+            });
         }
     }
 }
-

@@ -80,7 +80,7 @@ namespace ProjetDotNet.Data
                 }
 
                 // -------- Order Status --------
-                if (!context.orderStatuses.Any())
+                if (!context.OrderStatuses.Any())
                 {
                     var statuses = new List<OrderStatus>
                     {
@@ -90,7 +90,7 @@ namespace ProjetDotNet.Data
                         new OrderStatus { StatusId = 4, StatusName = "Cancelled" }
                     };
 
-                    await context.orderStatuses.AddRangeAsync(statuses);
+                    await context.OrderStatuses.AddRangeAsync(statuses);
                     await context.SaveChangesAsync();
                 }
             }

@@ -28,12 +28,15 @@ namespace ProjetDotNet.Models
         public List<OrderDetail> OrderDetail { get; set; }
         public List<CartDetail> CartDetail { get; set; }
 
-
         [NotMapped]
-        public string CategoryName { get; set; }
+        public string? CategoryName { get; set; }
+
+        // --- COMMENTED OUT TO STOP DATABASE ERRORS ---
+        /*
+        public Stock? Stock { get; set; } 
 
         [NotMapped]
         public int Quantity { get; set; }
-        public object Stock { get; internal set; }
+        */
     }
 }
