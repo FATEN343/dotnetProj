@@ -1,86 +1,189 @@
-@model ProjetDotNet.Models.DTOs.ProductDisplayModel
+@model ProductDisplayModel
 @{
-	ViewData["Title"] = "Home";
+	ViewData["Title"] = "Lustre - Elegant Skincare";
 }
 
-<div class="my-2">
-	<form asp-action="Index" class="row row-cols-lg-auto g-3 align-items-center">
-		<div class="col-12">
-			<select class="form-select" id="categoryId" name="categoryId">
-				<option selected>Category</option>
-				@foreach (var category in Model.Categories)
+<!-- Hero Banner -->
+<section class="hero-banner">
+	<div class="hero-content">
+		<h1 class="hero-tagline">Adorn Yourself In Elegance</h1>
+		<p class="hero-subtitle">Enhance Your Beauty with Premium Skincare from Lustre</p>
+		<a href="#products" class="shop-now-btn">Shop Now →</a>
+	</div>
+</section>
+
+<!-- Discover Section -->
+<section class="section">
+	<div class="discover-section">
+		<div class="discover-content">
+			<div class="discover-bg"></div>
+			<div class="discover-card">
+				<h2 class="discover-title">Discover The Elegance Of Our Collection</h2>
+				<p class="discover-text">
+					Explore our elegant skincare collection, meticulously designed to complement your unique beauty routine. Discover timeless classics and modern innovations that showcase exceptional quality and premium ingredients.
+				</p>
+				<a href="#products" class="discover-link">Read More +</a>
+			</div>
+		</div>
+		<div class="discover-images">
+			<div class="discover-image discover-image-1"></div>
+			<div class="discover-image discover-image-2"></div>
+		</div>
+	</div>
+</section>
+
+<!-- New Arrivals Section -->
+<section class="section" style="background-color: var(--white);">
+	<div class="section-header">
+		<h2 class="section-title-left" style="margin: 0;">New Arrivals</h2>
+		<div class="carousel-controls">
+			<button class="carousel-btn">←</button>
+			<button class="carousel-btn">→</button>
+		</div>
+	</div>
+	<div class="product-grid">
+		@foreach (var product in Model.Products.Take(3))
+		{
+			<div class="product-card">
+				@if (string.IsNullOrEmpty(product.Image))
 				{
-						<option selected="@(category.Id == Model.CategoryId)" value="@category.Id">
-						@category.CategoryName
-						</option>
+					<img src="/images/NoImage.png" class="product-image" alt="@product.ProductName">
 				}
-			</select>
-		</div>
-		<div class="col-12">
-			<input type="text" class="form-control" value="@Model.STerm" id="sterm" name="sterm" placeholder="Search by title">
-		</div>
-		<div class="col-12">
-			<button type="submit" class="btn btn-primary">Search</button>
-			<a href="/Home/Index" class="btn btn-dark">Reset</a>
-		</div>
-	</form>
-</div>
-
-<div class="w-100 mt-4 d-flex flex-wrap">
-	@foreach (var product in Model.Products)
-	{
-			<div class="card mx-3 mb-4" style="width: 11rem;">
-				<img style="width:100%;height:180px" src="/images/@(string.IsNullOrEmpty(product.Image) ? "NoImage.png" : product.Image)" class="card-img-top">
-
-				<div class="card-body">
-					<h5 class="card-title">@product.ProductName</h5>
-					<p class="card-text">
-						<b>Category: </b>@product.CategoryName <br />
-						<b>Brand: </b>@product.BrandName <br />
-						<b>Price: </b>@product.Price
-					</p>
-
-				@* --- STOCK CHECK COMMENTED OUT ---
-                @if (product.Quantity > 0)
-                {
-                    <button type="button" onclick="add(@product.Id)" class="btn btn-primary">Add to cart</button>
-                }
-                else
-                {
-                    <span style="color:red;">Out of stock</span>
-                } 
-                *@
-
-				@* Show button by default since we can't check stock yet *@
-					<button type="button" onclick="add(@product.Id)" class="btn btn-primary">Add to cart</button>
+				else
+				{
+					<img src="/images/@product.Image" class="product-image" alt="@product.ProductName">
+				}
+				<div class="product-info">
+					<h3 class="product-name">@product.ProductName</h3>
+					<p class="product-price">@product.Price MAD</p>
+					@if (product.Quantity > 0)
+					{
+						<button type="button" onclick="add(@product.Id)" class="add-to-cart-btn">Add to Cart</button>
+					}
+					else
+					{
+						<div class="out-of-stock">Out of Stock</div>
+					}
 				</div>
 			</div>
+		}
+	</div>
+</section>
 
-	}
-</div>
-@section Scripts {
-		<script>
-			async function add(productId) {
-				 var usernameEl = document.getElementById("username");
-			if(usernameEl==null){
-				window.location.href = "/Identity/Account/Login";
-			  //var username=usernameEl.innerText;
-			  //  if(username.length<1){
-			  //      window.location.href="/Identity/Account/Login";
-			  //  }
-			}
-				try {
-							var response = await fetch(`/Cart/AddItem?productId=${productId}`);
-					if (response.status == 200) {
-						var result = await response.json();
-						var cartCountEl = document.getElementById("cartCount");
-						cartCountEl.innerHTML = result;
-						window.location.href = "#cartCount";
+<!-- Catalog Section -->
+<section class="section" id="products">
+	<h2 class="section-title">Catalog</h2>
+	
+	<!-- Filter Buttons -->
+	<div class="filter-buttons">
+		<a href="/Home/Index" class="filter-btn @(Model.CategoryId == 0 ? "active" : "")">All</a>
+		@foreach (var category in Model.Categories)
+		{
+			<a href="/Home/Index?categoryId=@category.Id" class="filter-btn @(Model.CategoryId == category.Id ? "active" : "")">@category.CategoryName</a>
+		}
+	</div>
+
+	<!-- Search Section -->
+	<div class="search-section">
+		<form asp-action="Index" class="search-form">
+			<select name="categoryId" class="form-select">
+				<option value="0">All Categories</option>
+				@foreach (var category in Model.Categories)
+				{
+					<option value="@category.Id" selected="@(category.Id == Model.CategoryId)">@category.CategoryName</option>
+				}
+			</select>
+			<input type="text" name="sterm" value="@Model.STerm" placeholder="Search products..." class="form-control">
+			<button type="submit" class="btn">Search</button>
+			<a href="/Home/Index" class="btn" style="background-color: var(--light-brown);">Reset</a>
+		</form>
+	</div>
+
+	<!-- Product Grid -->
+	<div class="product-grid">
+		@foreach (var product in Model.Products)
+		{
+			<div class="product-card">
+				@if (string.IsNullOrEmpty(product.Image))
+				{
+					<img src="/images/NoImage.png" class="product-image" alt="@product.ProductName">
+				}
+				else
+				{
+					<img src="/images/@product.Image" class="product-image" alt="@product.ProductName">
+				}
+				<div class="product-info">
+					<h3 class="product-name">@product.ProductName</h3>
+					<p style="color: var(--text-dark); margin-bottom: 5px; font-size: 14px;">@product.CategoryName</p>
+					<p style="color: var(--text-dark); margin-bottom: 10px; font-size: 14px;">@product.BrandName</p>
+					<p class="product-price">@product.Price MAD</p>
+					@if (product.Quantity > 0)
+					{
+						<button type="button" onclick="add(@product.Id)" class="add-to-cart-btn">Add to Cart</button>
 					}
-				}
-				catch (err) {
-					console.log(err);
+					else
+					{
+						<div class="out-of-stock">Out of Stock</div>
+					}
+				</div>
+			</div>
+		}
+	</div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="testimonial-section">
+	<div class="testimonial-content">
+		<h2 class="section-title">What Our Clients Say</h2>
+		<div class="stars">★★★★★</div>
+		<p class="testimonial-text">
+			"Beauty is a talent, just like being funny or being smart. I'm really used to the premium skincare products from Lustre."
+		</p>
+		<p class="testimonial-author">— Satisfied Customer, Beauty Enthusiast</p>
+	</div>
+</section>
+
+<!-- Newsletter Section -->
+<section class="newsletter-section">
+	<div class="newsletter-content">
+		<h2 class="newsletter-title">Get Your Perfect Skincare Routine Today – 25% Off Applied!</h2>
+		<form class="newsletter-form" onsubmit="subscribeNewsletter(event)">
+			<input type="email" class="newsletter-input" placeholder="Enter email address..." required>
+			<button type="submit" class="newsletter-btn">Subscribe</button>
+		</form>
+	</div>
+</section>
+
+@section Scripts {
+	<script>
+		async function add(productId) {
+			var usernameEl = document.getElementById("username");
+			if(usernameEl == null){
+				window.location.href = "/Identity/Account/Login";
+				return;
+			}
+			try {
+				var response = await fetch(`/Cart/AddItem?productId=${productId}`);
+				if (response.status == 200) {
+					var result = await response.json();
+					var cartCountEl = document.getElementById("cartCount");
+					if (cartCountEl) {
+						cartCountEl.innerHTML = result;
+					}
+					// Show success message
+					alert("Product added to cart successfully!");
+					window.location.href = "#products";
 				}
 			}
-		</script>
+			catch (err) {
+				console.log(err);
+				alert("Error adding product to cart");
+			}
+		}
+
+		function subscribeNewsletter(event) {
+			event.preventDefault();
+			alert("Thank you for subscribing! You'll receive 25% off on your next purchase.");
+		}
+	</script>
 }

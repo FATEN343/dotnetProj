@@ -17,13 +17,12 @@
 					<th>Total Price</th>
 					<th>Action</th>
 				</tr>
-
 			@foreach (var item in Model.CartDetails)
 			{
 						<tr>
-							<td>@item.Product?.ProductName ?? "No Product"</td>
+							<td>@item.Product.ProductName</td>
 							<td>
-						@if (string.IsNullOrEmpty(item.Product?.Image))
+						@if (string.IsNullOrEmpty(item.Product.Image))
 						{
 										<img src="/images/NoImage.png" style="width:80px;height:100px" />
 						}
@@ -32,24 +31,21 @@
 										<img src="/images/@item.Product.Image" style="width:80px;height:100px" />
 						}
 							</td>
-							<td>@item.Product?.Category?.CategoryName ?? "No Category"</td>
-							<td>@item.Product?.Price X @item.Quantity</td>
-							<td>@((item.Product?.Price ?? 0) * item.Quantity)</td>
+							<td>@item.Product.Category.CategoryName</td>
+							<td>@item.Product.Price X @item.Quantity</td>
+							<td>@(item.Product.Price * item.Quantity)</td>
 							<td>
-						@* Increase Quantity button - stock logic commented out until Stock is created *@
-						@* 
-                        @if (item.Quantity < item.Product.Stock.Quantity)
-                        {
-                            <a class="btn btn-info" href="/Cart/AddItem?productId=@item.ProductId&&redirect=1">+</a>
-                        }
-                        else
-                        {
-                            <span style="border: 1px solid;padding: 8px 8px;color: red;border-radius: 5px;margin-right:4px">Out of stock </span>
-                        }
-                        *@
-
+						@* Increase Quantity button should be invisible if not enough stock *@
+						@if (item.Quantity < item.Product.Stock.Quantity)
+						{
+										<a class="btn btn-info" href="/Cart/AddItem?productId=@item.ProductId&&redirect=1">+</a>
+						}
+						else
+						{
+										<span style="border: 1px solid;padding: 8px 8px;color: red;border-radius: 5px;margin-right:4px">Out of stock </span>
+						}
 						@* Decrement button *@
-								<a class="btn btn-info" href="/cart/removeitem?productid=@item.ProductId">-</a>
+								<a class="btn btn-info" href="/Cart/RemoveItem?productId=@item.ProductId">-</a>
 							</td>
 						</tr>
 			}
@@ -57,12 +53,13 @@
 
 			<div class="my-2">
 				<h5>Total(INR): </h5>
-			@(Model.CartDetails.Select(item => (item.Product?.Price ?? 0) * item.Quantity).Sum())
+			@(Model.CartDetails.Select(item => item.Product.Price * item.Quantity).Sum())
 			</div>
 
 			<div class="my-2">
 				<a class="btn btn-primary" href="/Cart/Checkout">Checkout</a>
 			</div>
+
 	}
 	else
 	{

@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using ProjetDotNet.Models;
 
 namespace ProjetDotNet.Repositories
 {
@@ -25,7 +24,7 @@ namespace ProjetDotNet.Repositories
             try
             {
                 if (string.IsNullOrEmpty(userId))
-                    throw new UnauthorizedAccessException("User is not logged-in");
+                    throw new UnauthorizedAccessException("user is not logged-in");
 
                 var cart = await GetCart(userId);
                 if (cart is null)
@@ -40,7 +39,6 @@ namespace ProjetDotNet.Repositories
 
                 var cartItem = _db.CartDetails
                                   .FirstOrDefault(a => a.ShoppingCartId == cart.Id && a.ProductId == productId);
-
                 if (cartItem is not null)
                 {
                     cartItem.Quantity += qty;
@@ -57,13 +55,12 @@ namespace ProjetDotNet.Repositories
                     };
                     _db.CartDetails.Add(cartItem);
                 }
-
                 _db.SaveChanges();
                 transaction.Commit();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                // Handle exception
+                // handle exception or log
             }
 
             var cartItemCount = await GetCartItemCount(userId);
@@ -76,7 +73,7 @@ namespace ProjetDotNet.Repositories
             try
             {
                 if (string.IsNullOrEmpty(userId))
-                    throw new UnauthorizedAccessException("User is not logged-in");
+                    throw new UnauthorizedAccessException("user is not logged-in");
 
                 var cart = await GetCart(userId);
                 if (cart is null)
@@ -84,7 +81,6 @@ namespace ProjetDotNet.Repositories
 
                 var cartItem = _db.CartDetails
                                   .FirstOrDefault(a => a.ShoppingCartId == cart.Id && a.ProductId == productId);
-
                 if (cartItem is null)
                     throw new InvalidOperationException("No items in cart");
                 else if (cartItem.Quantity == 1)
@@ -94,9 +90,9 @@ namespace ProjetDotNet.Repositories
 
                 _db.SaveChanges();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                // Handle exception
+                // handle exception or log
             }
 
             var cartItemCount = await GetCartItemCount(userId);
@@ -107,24 +103,25 @@ namespace ProjetDotNet.Repositories
         {
             var userId = GetUserId();
             if (userId == null)
-                throw new InvalidOperationException("Invalid user ID");
+                throw new InvalidOperationException("Invalid user id");
 
             var shoppingCart = await _db.ShoppingCarts
-                .Include(a => a.CartDetails)
-                .ThenInclude(a => a.Product)
-                //.ThenInclude(a => a.Stock)  // commented temporarily
-                .Include(a => a.CartDetails)
-                .ThenInclude(a => a.Product)
-                //.ThenInclude(a => a.Category) // keep if Category exists
-                .Where(a => a.UserId == userId)
-                .FirstOrDefaultAsync();
+                                  .Include(a => a.CartDetails)
+                                  .ThenInclude(a => a.Product)
+                                  .ThenInclude(a => a.Stock)
+                                  .Include(a => a.CartDetails)
+                                  .ThenInclude(a => a.Product)
+                                  .ThenInclude(a => a.Category)
+                                  .Where(a => a.UserId == userId)
+                                  .FirstOrDefaultAsync();
 
             return shoppingCart;
         }
 
         public async Task<ShoppingCart> GetCart(string userId)
         {
-            return await _db.ShoppingCarts.FirstOrDefaultAsync(x => x.UserId == userId);
+            var cart = await _db.ShoppingCarts.FirstOrDefaultAsync(x => x.UserId == userId);
+            return cart;
         }
 
         public async Task<int> GetCartItemCount(string userId = "")
@@ -133,13 +130,11 @@ namespace ProjetDotNet.Repositories
             {
                 userId = GetUserId();
             }
-
             var data = await (from cart in _db.ShoppingCarts
                               join cartDetail in _db.CartDetails
                               on cart.Id equals cartDetail.ShoppingCartId
                               where cart.UserId == userId
-                              select new { cartDetail.Id })
-                        .ToListAsync();
+                              select new { cartDetail.Id }).ToListAsync();
 
             return data.Count;
         }
@@ -157,11 +152,9 @@ namespace ProjetDotNet.Repositories
                 if (cart is null)
                     throw new InvalidOperationException("Invalid cart");
 
-                var cartDetails = _db.CartDetails
-                                     .Where(a => a.ShoppingCartId == cart.Id)
-                                     .ToList();
-
-                if (cartDetails.Count == 0)
+                var cartDetail = _db.CartDetails
+                                    .Where(a => a.ShoppingCartId == cart.Id).ToList();
+                if (cartDetail.Count == 0)
                     throw new InvalidOperationException("Cart is empty");
 
                 var pendingRecord = _db.OrderStatuses.FirstOrDefault(s => s.StatusName == "Pending");
@@ -181,9 +174,9 @@ namespace ProjetDotNet.Repositories
                     OrderStatusId = pendingRecord.Id
                 };
                 _db.Orders.Add(order);
-                _db.SaveChanges();
+                await _db.SaveChangesAsync();
 
-                foreach (var item in cartDetails)
+                foreach (var item in cartDetail)
                 {
                     var orderDetail = new OrderDetail
                     {
@@ -194,27 +187,24 @@ namespace ProjetDotNet.Repositories
                     };
                     _db.OrderDetails.Add(orderDetail);
 
-                    // update stock here (commented temporarily)
-                    /*
                     var stock = await _db.Stocks.FirstOrDefaultAsync(a => a.ProductId == item.ProductId);
                     if (stock == null)
                         throw new InvalidOperationException("Stock is null");
 
                     if (item.Quantity > stock.Quantity)
-                        throw new InvalidOperationException($"Only {stock.Quantity} item(s) are available in stock");
+                        throw new InvalidOperationException($"Only {stock.Quantity} items are available in the stock");
 
                     stock.Quantity -= item.Quantity;
-                    */
                 }
 
-                _db.CartDetails.RemoveRange(cartDetails);
-                _db.SaveChanges();
+                _db.CartDetails.RemoveRange(cartDetail);
+                await _db.SaveChangesAsync();
                 transaction.Commit();
-
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
+                // handle exception or log
                 return false;
             }
         }
@@ -222,7 +212,8 @@ namespace ProjetDotNet.Repositories
         private string GetUserId()
         {
             var principal = _httpContextAccessor.HttpContext.User;
-            return _userManager.GetUserId(principal);
+            string userId = _userManager.GetUserId(principal);
+            return userId;
         }
     }
 }

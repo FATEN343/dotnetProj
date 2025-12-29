@@ -32,6 +32,6 @@ namespace ProjetDotNet.Models
         public bool IsPaid { get; set; }
 
         public OrderStatus OrderStatus { get; set; }
-        public List<OrderDetail> OrderDetail { get; set; }
+        public List<OrderDetail> OrderDetails { get; set; }
     }
 }

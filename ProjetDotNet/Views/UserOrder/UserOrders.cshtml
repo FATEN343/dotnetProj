@@ -1,0 +1,77 @@
+@model IEnumerable<Order>
+
+<div style="width:100%" class="mt-2">
+	<a href="/Identity/Account/Manage" class="btn btn-primary my-2">Back</a>
+
+	<h4>My Orders</h4>
+
+	@if (Model != null && Model.Any())
+	{
+			<table class="table table-striped">
+				<tr>
+					<th>Order Date</th>
+					<th>Order Status</th>
+				</tr>
+
+			@foreach (var order in Model)
+			{
+						<tr>
+							<td>@order.CreateDate.ToString("dd-MM-yyyy")</td>
+							<td>@order.OrderStatus.StatusName</td>
+						</tr>
+
+				@if (order.OrderDetails != null && order.OrderDetails.Any())
+				{
+								<tr>
+									<td colspan="2">
+										<table class="table table-bordered">
+											<tr>
+												<td><b>Total:</b></td>
+												<td>
+										@(order.OrderDetails
+												.Select(item => item.Product.Price * item.Quantity)
+												.Sum())
+												</td>
+											</tr>
+
+											<tr>
+												<th>Product</th>
+												<th>Image</th>
+												<th>Category</th>
+												<th>Unit Price</th>
+												<th>Total Price</th>
+											</tr>
+
+								@foreach (var item in order.OrderDetails)
+								{
+													<tr>
+														<td>@item.Product.ProductName</td>
+
+														<td>
+											@if (string.IsNullOrEmpty(item.Product.Image))
+											{
+																	<img src="/images/NoImage.png" style="width:80px;height:100px" />
+											}
+											else
+											{
+																	<img src="/images/@item.Product.Image" style="width:80px;height:100px" />
+											}
+														</td>
+
+														<td>@item.Product.Category.CategoryName</td>
+														<td>@item.Product.Price × @item.Quantity</td>
+														<td>@(item.Product.Price * item.Quantity)</td>
+													</tr>
+								}
+										</table>
+									</td>
+								</tr>
+				}
+			}
+			</table>
+	}
+	else
+	{
+			<h5>No orders</h5>
+	}
+</div>

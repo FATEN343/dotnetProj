@@ -31,12 +31,11 @@ namespace ProjetDotNet.Models
         [NotMapped]
         public string? CategoryName { get; set; }
 
-        // --- COMMENTED OUT TO STOP DATABASE ERRORS ---
-        /*
+        
         public Stock? Stock { get; set; } 
 
         [NotMapped]
         public int Quantity { get; set; }
-        */
+        
     }
 }

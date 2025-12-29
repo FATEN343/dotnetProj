@@ -22,7 +22,7 @@ namespace ProjetDotNet.Repositories
             var productQuery = _db.Products
                .AsNoTracking()
                .Include(x => x.Category)
-               // .Include(x => x.Stock) // Commented out: Stock table doesn't exist yet
+               .Include(x => x.Stock)
                .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(sTerm))
@@ -45,7 +45,7 @@ namespace ProjetDotNet.Repositories
                     CategoryId = product.CategoryId,
                     Price = product.Price,
                     CategoryName = product.Category.CategoryName,
-                    // Quantity = product.Stock == null ? 0 : product.Stock.Quantity // Commented out
+                    Quantity = product.Stock == null ? 0 : product.Stock.Quantity
                 }).ToListAsync();
 
             return products;
